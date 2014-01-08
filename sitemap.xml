@@ -1,16 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
+        <loc>http://pgarbe.github.io/blog/2014/01/08/hello-world/</loc>
+        <lastmod>2014-01-08T09:10:54+01:00</lastmod>
+    </url>
+    <url>
         <loc>http://pgarbe.github.io/about/</loc>
-        <lastmod>2014-01-02T16:35:52+01:00</lastmod>
+        <lastmod>2014-01-08T09:12:54+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/blog/archives/</loc>
-        <lastmod>2014-01-02T15:33:33+01:00</lastmod>
+        <lastmod>2014-01-08T09:10:54+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/</loc>
-        <lastmod>2014-01-02T15:33:33+01:00</lastmod>
+        <lastmod>2014-01-08T09:10:54+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/robots.txt</loc>
