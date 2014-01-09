@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Philipp Garbe´s Blog]]></title>
+  <title><![CDATA[Philipp´s Blog]]></title>
   <link href="http://pgarbe.github.io/atom.xml" rel="self"/>
   <link href="http://pgarbe.github.io/"/>
-  <updated>2014-01-08T12:20:43+01:00</updated>
+  <updated>2014-01-09T08:23:49+01:00</updated>
   <id>http://pgarbe.github.io/</id>
   <author>
     <name><![CDATA[Philipp Garbe]]></name>
@@ -14,13 +14,13 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Hello World]]></title>
-    <link href="http://pgarbe.github.io/blog/2014/01/08/hello-world/"/>
-    <updated>2014-01-08T09:00:00+01:00</updated>
-    <id>http://pgarbe.github.io/blog/2014/01/08/hello-world</id>
-    <content type="html"><![CDATA[<p>It is a nice <a href="http://en.wikipedia.org/wiki/Hello_world_program">tradition</a> to start with a &ldquo;Hello world&rdquo; program when you learn a new programming language . Although this is my first blog post, it feels also like learning a new programming language. It also helps me to get in touch with <a href="http://octopress.org/">Octopress</a> and <a href="http://pages.github.com/">GitHub pages</a> where this blog is hosted. I also need to get more familiar with markdown.</p>
+    <title type="html"><![CDATA[Hello world]]></title>
+    <link href="http://pgarbe.github.io/blog/2014/01/09/hello-world/"/>
+    <updated>2014-01-09T09:00:00+01:00</updated>
+    <id>http://pgarbe.github.io/blog/2014/01/09/hello-world</id>
+    <content type="html"><![CDATA[<p>It is a nice <a href="http://en.wikipedia.org/wiki/Hello_world_program">tradition</a> to start with a &ldquo;Hello world&rdquo; program when you learn a new programming language. Although this is my first blog post, it feels also like learning a new programming language. It also helps me to get in touch with <a href="http://octopress.org/">Octopress</a> and <a href="http://pages.github.com/">GitHub Pages</a> where this blog is hosted. I also need to get more familiar with markdown.</p>
 
-<p>Let me tell you some details about myself. My name is Philipp Garbe and I started programming when I was a teen (Some C++ but mostly VB). After .Net was first-time released I switched to C# and it is still my favourite language. But in the last couple of months I came more and more in contact with Ruby and F#. And not to forget my love-hate relationship with JavaScript. For almost all of my projects I use Git as version control and the more I work with it the more I like it. It´s not that easy at the beginning (compared to subverion) but it has a lot of power.</p>
+<p>Let me tell you some details about myself. My name is Philipp Garbe and I started programming when I was a teen (some C++ but mostly VB). After .Net was first-time released I switched to C# and it is still my favourite language. But in the last couple of months I came more and more in contact with Ruby and F#. And not to forget my love-hate relationship with JavaScript. For almost all of my projects I use git as version control and the more I work with it the more I like it. It´s not that easy at the beginning (compared to subverion) but it has a lot of power.</p>
 
 <p>Since several years now, I work for a great <a href="http://www.autoscout24.de">company</a> in Munich. We work in very agile teams and I have the freedom to experiment with techniques like CQRS, Event Sourcing and DDD. I also believe that  <a href="http://continuousdelivery.com/">Continous Delivery</a> (or <a href="http://continuousdelivery.com/2010/08/continuous-delivery-vs-continuous-deployment/">Continous Deployment</a> if possible) is fundamental for good teams and good products.</p>
 
