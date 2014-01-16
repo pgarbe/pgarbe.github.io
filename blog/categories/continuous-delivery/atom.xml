@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Philipp´s Blog]]></title>
-  <link href="http://pgarbe.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Continuous Delivery | Philipp´s Blog]]></title>
+  <link href="http://pgarbe.github.io/blog/categories/continuous-delivery/atom.xml" rel="self"/>
   <link href="http://pgarbe.github.io/"/>
   <updated>2014-01-16T13:36:50+01:00</updated>
   <id>http://pgarbe.github.io/</id>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[The fear of new features]]></title>
+    <title type="html"><![CDATA[The Fear of New Features]]></title>
     <link href="http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/"/>
     <updated>2014-01-16T10:51:51+01:00</updated>
     <id>http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features</id>
@@ -31,14 +31,14 @@
 
 <p>To reduce the risk of a release we can simply reduce the number of changes by releasing more often. Sounds easy but it isn´t. It needs quite some effort to build an automatic release pipeline. Have a look on the next two pictures and you can see that the risk will be reduced the more often you release because the changes per release getting less.</p>
 
-<p><img src="http://pgarbe.github.io/images/posts/bigbangreleases.png" width="300" height="250" title="BigBang Releases" >
-<img src="http://pgarbe.github.io/images/posts/continuousdelivery.png" width="300" height="250" title="Continuous Delivery" ></p>
+<p><img src="/images/posts/bigbangreleases.png" width="300" height="250" title="BigBang Releases" >
+<img src="/images/posts/continuousdelivery.png" width="300" height="250" title="Continuous Delivery" ></p>
 
 <p>To be able to release that often you need <a href="http://martinfowler.com/bliki/FeatureToggle.html">Feature Toggles</a> to work on new features without affecting the releases process. Now you can commit your changes and the feature is not visible as long as the toggle is switched off. Plus you can revert that feature without changing the code but only some config.</p>
 
 <p>As long as new features are in development and toggled, a code release is not a big thing anymore. But what if you want to finally toggle on your feature? Then a new code release is needed with the feature toggled on. And again we have a risky release. Why? Because you enable a LOT of code with a single change.</p>
 
-<p><img src="http://pgarbe.github.io/images/posts/featuretogglerelease.png" width="700" height="250" title="BigBang Releases with Feature Toggles" ></p>
+<p><img src="/images/posts/featuretogglerelease.png" width="700" height="250" title="BigBang Releases with Feature Toggles" ></p>
 
 <h2>Patterns to the rescue</h2>
 
@@ -64,24 +64,6 @@ To get feedback if the feature works (technically and also from a business persp
 <p>In my next blog posts I´ll show how to work with FeatureBee.</p>
 
 <p>Happy Releasing!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Hello world]]></title>
-    <link href="http://pgarbe.github.io/blog/2014/01/09/hello-world/"/>
-    <updated>2014-01-09T09:00:00+01:00</updated>
-    <id>http://pgarbe.github.io/blog/2014/01/09/hello-world</id>
-    <content type="html"><![CDATA[<p>It is a nice <a href="http://en.wikipedia.org/wiki/Hello_world_program">tradition</a> to start with a &ldquo;Hello world&rdquo; program when you learn a new programming language. Although this is my first blog post, it feels also like learning a new programming language. It also helps me to get in touch with <a href="http://octopress.org/">Octopress</a> and <a href="http://pages.github.com/">GitHub Pages</a> where this blog is hosted. I also need to get more familiar with markdown.</p>
-
-<!--more-->
-
-
-<p>Let me tell you some details about myself. My name is Philipp Garbe and I started programming when I was a teen (some C++ but mostly VB). After .Net was first-time released I switched to C# and it is still my favourite language. But in the last couple of months I came more and more in contact with Ruby and F#. And not to forget my love-hate relationship with JavaScript. For almost all of my projects I use git as version control and the more I work with it the more I like it. It´s not that easy at the beginning (compared to subverion) but it has a lot of power.</p>
-
-<p>Since several years now, I work for a great <a href="http://www.autoscout24.de">company</a> in Munich. We work in very agile teams and I have the freedom to experiment with techniques like CQRS, Event Sourcing and DDD. I also believe that  <a href="http://continuousdelivery.com/">Continous Delivery</a> (or <a href="http://continuousdelivery.com/2010/08/continuous-delivery-vs-continuous-deployment/">Continous Deployment</a> if possible) is fundamental for good teams and good products.</p>
-
-<p>So, what´s next? There will be some interesting news in the next weeks. Together with my colleague <a href="http://www.matthias-kainer.de">Matthias</a> I started a new project that should make releases less painful. I don´t want to spoiler so <a href="http://pgarbe.github.io/atom.xml">subscribe</a> to this blog and you´ll be updated.</p>
 ]]></content>
   </entry>
   

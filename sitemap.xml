@@ -2,7 +2,11 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://pgarbe.github.io/blog/2014/01/09/hello-world/</loc>
-        <lastmod>2014-01-09T06:44:03+01:00</lastmod>
+        <lastmod>2014-01-15T18:12:05+01:00</lastmod>
+    </url>
+    <url>
+        <loc>http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/</loc>
+        <lastmod>2014-01-16T13:23:25+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/about/</loc>
@@ -10,7 +14,7 @@
     </url>
     <url>
         <loc>http://pgarbe.github.io/blog/archives/</loc>
-        <lastmod>2014-01-09T06:44:03+01:00</lastmod>
+        <lastmod>2014-01-16T13:23:25+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/blog/categories/</loc>
@@ -18,7 +22,7 @@
     </url>
     <url>
         <loc>http://pgarbe.github.io/</loc>
-        <lastmod>2014-01-09T06:44:03+01:00</lastmod>
+        <lastmod>2014-01-16T13:23:25+01:00</lastmod>
     </url>
     <url>
         <loc>http://pgarbe.github.io/robots.txt</loc>

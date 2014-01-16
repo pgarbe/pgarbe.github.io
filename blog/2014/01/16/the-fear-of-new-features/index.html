@@ -5,11 +5,11 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Hello world - Philipp´s Blog</title>
+	<title>The fear of new features - Philipp´s Blog</title>
 	<meta name="author" content="Philipp Garbe">
 
 	
-	<meta name="description" content="Hello World It is a nice tradition to start with a &ldquo;Hello world&rdquo; program when you learn a new programming language. Although this is my &hellip;">
+	<meta name="description" content="The Fear of New Features How do you feel when you think about your next release? Are you scared? Or is your operations team scared? But why are &hellip;">
 	
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +19,7 @@
 
 	<link href="/atom.xml" rel="alternate" title="Philipp´s Blog" type="application/atom+xml">
 	
-	<link rel="canonical" href="http://pgarbe.github.io/blog/2014/01/09/hello-world/">
+	<link rel="canonical" href="http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/">
 	<link href="/favicon.png" rel="shortcut icon">
 	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
 	<link href="/stylesheets/font-awesome.min.css" media="screen, projection" rel="stylesheet" type="text/css">
@@ -102,17 +102,53 @@
 			
 			<div class="mid-col-container">
 				<div id="content" class="inner"><article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-	<h1 class="title" itemprop="name">Hello World</h1>
-	<div class="entry-content" itemprop="articleBody"><p>It is a nice <a href="http://en.wikipedia.org/wiki/Hello_world_program">tradition</a> to start with a &ldquo;Hello world&rdquo; program when you learn a new programming language. Although this is my first blog post, it feels also like learning a new programming language. It also helps me to get in touch with <a href="http://octopress.org/">Octopress</a> and <a href="http://pages.github.com/">GitHub Pages</a> where this blog is hosted. I also need to get more familiar with markdown.</p>
+	<h1 class="title" itemprop="name">The Fear of New Features</h1>
+	<div class="entry-content" itemprop="articleBody"><p>How do you feel when you think about your next release? Are you scared? Or is your operations team scared? But why are releases often so painful?</p>
+
+<p>Most of the time releases are painful because they are not done regularly. There could be many reasons but in this post I want to talk about a not so obvious problem. The <strong>fear of new Features</strong>.</p>
 
 <!--more-->
 
 
-<p>Let me tell you some details about myself. My name is Philipp Garbe and I started programming when I was a teen (some C++ but mostly VB). After .Net was first-time released I switched to C# and it is still my favourite language. But in the last couple of months I came more and more in contact with Ruby and F#. And not to forget my love-hate relationship with JavaScript. For almost all of my projects I use git as version control and the more I work with it the more I like it. It´s not that easy at the beginning (compared to subverion) but it has a lot of power.</p>
+<p>To be honest, developers are normally not so scared about releasing new features, because they built it. But operations people are. Why? Devs are paid to produce new features, but Ops are paid to host a stable platform. And every change (release) is a risk.</p>
 
-<p>Since several years now, I work for a great <a href="http://www.autoscout24.de">company</a> in Munich. We work in very agile teams and I have the freedom to experiment with techniques like CQRS, Event Sourcing and DDD. I also believe that  <a href="http://continuousdelivery.com/">Continous Delivery</a> (or <a href="http://continuousdelivery.com/2010/08/continuous-delivery-vs-continuous-deployment/">Continous Deployment</a> if possible) is fundamental for good teams and good products.</p>
+<h2>Continuous Delivery</h2>
 
-<p>So, what´s next? There will be some interesting news in the next weeks. Together with my colleague <a href="http://www.matthias-kainer.de">Matthias</a> I started a new project that should make releases less painful. I don´t want to spoiler so <a href="http://pgarbe.github.io/atom.xml">subscribe</a> to this blog and you´ll be updated.</p>
+<p>To reduce the risk of a release we can simply reduce the number of changes by releasing more often. Sounds easy but it isn´t. It needs quite some effort to build an automatic release pipeline. Have a look on the next two pictures and you can see that the risk will be reduced the more often you release because the changes per release getting less.</p>
+
+<p><img src="/images/posts/bigbangreleases.png" width="300" height="250" title="BigBang Releases" >
+<img src="/images/posts/continuousdelivery.png" width="300" height="250" title="Continuous Delivery" ></p>
+
+<p>To be able to release that often you need <a href="http://martinfowler.com/bliki/FeatureToggle.html">Feature Toggles</a> to work on new features without affecting the releases process. Now you can commit your changes and the feature is not visible as long as the toggle is switched off. Plus you can revert that feature without changing the code but only some config.</p>
+
+<p>As long as new features are in development and toggled, a code release is not a big thing anymore. But what if you want to finally toggle on your feature? Then a new code release is needed with the feature toggled on. And again we have a risky release. Why? Because you enable a LOT of code with a single change.</p>
+
+<p><img src="/images/posts/featuretogglerelease.png" width="700" height="250" title="BigBang Releases with Feature Toggles" ></p>
+
+<h2>Patterns to the rescue</h2>
+
+<p>How do we handle the risk of a new feature?</p>
+
+<ul>
+<li><p><strong>Single Responsibility</strong><br>
+Shipping code to live servers and switching on new features are in my opinion two different concerns. The first one is very technical, the later business driven. What happens when you decouple the feature releases from your code release? Code releases becomes boring for you and also for operations. At some point you maybe release every commit automatically (and that´s the <a href="http://blog.crisp.se/2013/02/05/yassalsundman/continuous-delivery-vs-continuous-deployment">difference</a> between Continuous Delivery and Continuous Deployment).</p></li>
+<li><p><strong>Make it easy to toggle on and off</strong><br>
+It should be easy to toggle a feature on. Just a click. Everyone in your team should be able to do it. When the feature is accepted by your product guy he can immediately release it by himself.
+And it should be easy to rollback a feature when it´s not (properly) working.</p></li>
+<li><p><strong>Canary Release</strong><br>
+To get feedback if the feature works (technically and also from a business perspective) it should be rolled out step-by-step and monitored. You maybe start only with 5% of your visitors or you show it only to Chrome users (or some other condition) and when it works increase the number of users.</p></li>
+</ul>
+
+
+<h2>Summary</h2>
+
+<p>Knowing how to deal with that issues is one thing, the tooling is another. Together with <a href="http://www.matthias-kainer.de">Matthias</a> I started a new project called <a href="https://github.com/autoscout24/featurebee">FeatureBee</a> where we want to make it easier to release new features. The idea behind FeatureBee is to make it for developers as easy as possible to toggle new features and enable Product Owners at the same time to release features when and how they want it. Without all the technical stuff like configuration files, VCS and build processes.</p>
+
+<p>In my opinion this will change the way you and your team works. Imagine that you can release every green build automatically. You can switch features on and off whenever you want. You can test features on live environment without showing the feature to all other users. Think about it.</p>
+
+<p>In my next blog posts I´ll show how to work with FeatureBee.</p>
+
+<p>Happy Releasing!</p>
 </div>
 
 </article>
@@ -153,8 +189,8 @@ Design credit: <a href="http://shashankmehta.in/archive/2012/greyshade.html">Sha
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://pgarbe.github.io/blog/2014/01/09/hello-world/';
-        var disqus_url = 'http://pgarbe.github.io/blog/2014/01/09/hello-world/';
+        var disqus_identifier = 'http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/';
+        var disqus_url = 'http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/';
         var disqus_script = 'embed.js';
       
     (function () {
