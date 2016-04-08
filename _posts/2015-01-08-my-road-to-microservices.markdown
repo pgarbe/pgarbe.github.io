@@ -4,7 +4,7 @@ title: "My Road to Microservices"
 date: 2014-10-09 13:00:00 +0100
 author: Philipp Garbe
 comments: true
-categories: autoscout24 microservices monolith
+# categories: autoscout24 microservices monolith
 ---
 
 At the moment there is a big hype about microservices. Especially since Martin Fowler wrote an [article](http://martinfowler.com/articles/microservices.html) about it. Also for [AutoScout24](http://about.autoscout24.com/) it´s a big topic. Not because of the hype but our history.

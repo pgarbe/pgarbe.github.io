@@ -5,7 +5,7 @@ date: 2015-07-10 07:17:05 +0200
 author: Philipp Garbe
 comments: true
 published: true
-categories: [Docker, AWS, ECS, HuBot]
+# categories: [Docker, AWS, ECS, HuBot]
 keywords: "Docker, AWS ECS, EC2 Container Service, HuBot"
 description: "How to store secrets like apikeys, username and passwords of a docker container while using AWS EC2 Container Services ECS"
 ---

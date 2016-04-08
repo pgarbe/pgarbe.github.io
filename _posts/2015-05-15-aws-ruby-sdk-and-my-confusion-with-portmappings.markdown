@@ -5,7 +5,7 @@ date: 2015-05-15 12:25:25 +0200
 author: Philipp Garbe
 comments: true
 published: true
-categories: [AWS, ECS]
+# categories: [AWS, ECS]
 keywords: "AWS ECS, EC2 Container Service, Ruby, SDK"
 description: "AWS Ruby SDK snake_case portMappings"
 

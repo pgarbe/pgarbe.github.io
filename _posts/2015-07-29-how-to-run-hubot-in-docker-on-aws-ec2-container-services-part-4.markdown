@@ -5,7 +5,7 @@ date: 2015-08-24 14:04:25 +0200
 author: Philipp Garbe
 comments: true
 published: true
-categories: [Docker, AWS, ECS, HuBot]
+# categories: [Docker, AWS, ECS, HuBot]
 keywords: "Docker, AWS ECS, EC2 Container Service, AutoStacker, AutoStacke24, CloudFormation, HuBot"
 description: "How to deploy docker containers to AWS EC2 Container Services ECS with CloudFormation and AutoStacker24"
 ---

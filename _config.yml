@@ -2,10 +2,11 @@
 # See http://ixti.net/software/2013/01/28/using-jekyll-plugins-on-github-pages.html for making `jekyll archives` work.
 gems:
   - jekyll-archives
-#   - jekyll-sitemap
+  - jekyll-sitemap
 
 exclude:
   - "/vendor/"
+  - "posts.html"
 
 # Theme: http://jekyllthemes.io/theme/33901899/centrarium
 
@@ -35,7 +36,7 @@ highlightjs_theme: "monokai_sublime"
 
 # Archive settings (see https://github.com/jekyll/jekyll-archives/)
 jekyll-archives:
-  enabled: [categories]
+  enabled: categories
   layout: 'archive'
   permalinks:
     category: '/category/:name/'

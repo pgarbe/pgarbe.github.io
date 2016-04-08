@@ -5,7 +5,7 @@ date: 2015-05-11 19:53:16 +0200
 author: Philipp Garbe
 comments: true
 published: true
-categories: [Docker, AWS, ECS, HuBot]
+# categories: [Docker, AWS, ECS, HuBot]
 keywords: "Docker, AWS ECS, EC2 Container Service, HuBot, CircleCI"
 description: "Continuous delivery and deployment of a docker container to AWS EC2 Container Services ECS"
 

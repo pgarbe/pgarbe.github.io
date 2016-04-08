@@ -4,7 +4,7 @@ title: "Impressions from QCon San Francisco 2014"
 date: 2014-11-14 09:00:00 +0100
 author: Philipp Garbe
 comments: true
-categories: [conference,qcon,san francisco]
+#categories: [conference,qcon,san francisco]
 ---
 
 This year [AutoScout24](http://about.autoscout24.com/) was generous again to let me go to [QCon Conference in San Francisco](https://www.qconsf.com/). The overall topic was “Software is changing the world”. Let me share my impressions with you.

@@ -4,7 +4,7 @@ title: "The fear of new features"
 date: 2014-01-16 10:51:51 +0100
 author: Philipp Garbe
 comments: true
-categories: [Continuous Delivery, Continuous Deployment, Feature Toggles, FeatureBee]
+# categories: [Continuous Delivery, Continuous Deployment, Feature Toggles, FeatureBee]
 published: true
 keywords: "FeatureBee, Continous Delivery, Continous Deployment, Canary Releases, Feature Toggles"
 description: "The fear of new features, decouple feature releases from code releases, from continous delivery to continuous deployment, FeatureBee"

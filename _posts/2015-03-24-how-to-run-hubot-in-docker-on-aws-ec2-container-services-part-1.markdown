@@ -5,7 +5,7 @@ date: 2015-03-24 08:28:58 +0100
 author: Philipp Garbe
 comments: true
 published: true
-categories: [Docker, AWS, HuBot]
+# categories: [Docker, AWS, HuBot]
 keywords: "Docker, AWS ECS, EC2 Container Service, HuBot, CircleCI"
 description: "The fear of new features, decouple feature releases from code releases, from continous delivery to continuous deployment, FeatureBee"
 
