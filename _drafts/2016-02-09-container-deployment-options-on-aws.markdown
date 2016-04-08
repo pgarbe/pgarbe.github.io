@@ -5,7 +5,7 @@ date: 2016-02-09 13:15:29 +0100
 author: Philipp Garbe
 comments: true
 published: false
-categories: [Docker, AWS, Continuous Delivery]
+# categories: [Docker, AWS, Continuous Delivery]
 keywords: "Docker, AWS ECS, EC2 Container Service, CloudFormation, Docker Compose"
 description: "An overview of different deployment options for Docker containers on AWS"
 ---
