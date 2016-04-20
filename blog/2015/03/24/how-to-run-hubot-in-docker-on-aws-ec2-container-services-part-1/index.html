@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=http://garbe.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/">
+  <link rel="canonical" href="http://garbe.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/" />
+
+  <title>How to run HuBot in Docker on AWS EC2 Container Services - Part 1</title>
+
+
+  <meta name="description" content="The fear of new features, decouple feature releases from code releases, from continous delivery to continuous deployment, FeatureBee">
+
+  <meta name="keywords" content="Docker, AWS ECS, EC2 Container Service, HuBot, CircleCI">
+
+
+  <meta name="author" content="Philipp Garbe">
+  <meta name="copyright" content="&copy; Philipp Garbe 2016">
+
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/styles/monokai_sublime.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/css/lightbox.css">
+
+  <!-- Favicon and other icons (made with http://www.favicon-generator.org/) -->
+  <link rel="shortcut icon" href="/assets/icons/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/assets/icons/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="57x57" href="/assets/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/assets/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/assets/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/assets/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/assets/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/assets/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/assets/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/assets/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+  <link rel="manifest" href="/assets/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/assets/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+  <!-- Site styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/">
+  <link rel="alternate" type="application/rss+xml" title="Philipp&#180;s Blog" href="http://feeds.feedburner.com/pgarbe" />
+</head>
+
+
+  <body>
+
+    <header class="navigation" role="banner">
+  <div class="navigation-wrapper">
+    <a href="/" class="logo">
+
+      <span>Philipp&#180;s Blog</span>
+
+    </a>
+    <a href="javascript:void(0)" class="navigation-menu-button" id="js-mobile-menu">
+      <i class="fa fa-bars"></i>
+    </a>
+    <nav role="navigation">
+      <ul id="js-navigation-menu" class="navigation-menu show">
+
+
+          <li class="nav-link"><a href="/about/">About Me</a>
+
+
+
+
+
+
+
+
+
+          <li class="nav-link"><a href="/speaker/">Speaker</a>
+
+
+
+
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <div class="page-content">
+        <div class="post">
+
+<div class="post-header-container " >
+  <div class="scrim ">
+    <header class="post-header">
+      <h1 class="title">How to run HuBot in Docker on AWS EC2 Container Services - Part 1</h1>
+      <p class="info">by <strong>Philipp Garbe</strong></p>
+    </header>
+  </div>
+</div>
+
+<div class="wrapper">
+
+ <span class="page-divider">
+  <span class="one"></span>
+  <span class="two"></span>
+</span>
+
+
+<section class="post-meta">
+  <div class="post-date">March 24, 2015</div>
+  <div class="post-categories">
+
+  </div>
+</section>
+
+<article class="post-content">
+  <p>It all began when I was too lazy to check the website of our local <a href="http://www.leonardi-kg.de/">canteen</a> to find out todays lunch menu. Ok, it’s only a couple of clicks and not actual “work” but hey…</p>
+
+<p>I have already played around with <a href="https://github.com/github/hubot">HuBot</a> in the past and I’m also very excited about <a href="https://www.docker.com/">Docker</a> so the idea raised to combine these things. And because <a href="http://inside.autoscout24.com/2015/01/04/autoscout24-changes-technology-aws-linux-jvm">we are in the cloud now</a> it has to be hosted on AWS as well. Meanwhile AWS published the new <a href="http://aws.amazon.com/ecs/">EC2 Container Service (ECS)</a> in Ireland so I had everything I needed. Let me share my experiences (and some code) with you.</p>
+
+<h3 id="big-picture">Big Picture</h3>
+<p>The idea is to have all relevant sources in one GitHub repository. With each commit a build should be triggered and when the tests are green it should automatically deployed to AWS EC2 Container Service (ECS).</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>GitHub -&gt; CircleCI -&gt; Docker Hub -&gt; AWS ECS
+</code></pre>
+</div>
+
+<p>Sources are available on my <a href="https://github.com/pgarbe/tatsu-hubot">GitHub repository</a>.</p>
+
+<h3 id="run-hubot-in-docker-container">Run HuBot in Docker container</h3>
+<p>Installing HuBot is quite easy. You can find a good documentation <a href="https://hubot.github.com/docs/">here</a>. With Docker it’s also very easy. First of all we need to define all requirements:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>FROM ubuntu
+
+RUN apt-get update
+RUN apt-get -y install expect redis-server nodejs npm
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+
+RUN npm install -g coffee-script
+RUN npm install -g yo generator-hubot
+</code></pre>
+</div>
+
+<h4 id="create-your-own-user">Create your own user</h4>
+<p>Normally you would run “yo hubot” to create a new instance but that leads to the exception  <em>Error: EACCES, permission denied ‘/root/.config/configstore/insight-yo.yml’</em></p>
+
+<p>The reason is that <a href="https://github.com/yeoman/yo/issues/101">yo doesn’t run as root user</a>. So we have to create our own user and switch to it.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code># Create hubot user
+RUN	useradd -d /hubot -m -s /bin/bash -U hubot
+
+# Log in as hubot user and change directory
+USER	hubot
+WORKDIR /hubot
+
+# Install hubot
+RUN yo hubot --owner="You" --name="HuBot" --description="HuBot on Docker" --defaults
+</code></pre>
+</div>
+
+<h4 id="adding-custom-scripts">Adding custom scripts</h4>
+<p>The next step is to load some scripts. HuBot supports three different ways to install custom scripts.</p>
+
+<ol>
+  <li>
+    <p><strong>Built-in scripts</strong>: HuBot is shipped with some built-in scripts which are disabled by default. All you need is a <a href="https://github.com/pgarbe/tatsu-hubot/blob/master/hubot-scripts.json">hubot-scripts.json</a> file where you define all the scripts which should be enabled. This file has to be added to your container</p>
+
+    <div class="highlighter-rouge"><pre class="highlight"><code> ADD hubot-scripts.json /hubot/
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p><strong>Community scripts</strong>: Scripts from the community can be installed by npm. In addition these scripts have also be enabled in a <a href="https://github.com/pgarbe/tatsu-hubot/blob/master/external-scripts.json">external-scripts.json</a> file which needs also be added to the container.</p>
+
+    <div class="highlighter-rouge"><pre class="highlight"><code> RUN npm install hubot-standup-alarm --save &amp;&amp; npm install
+ ADD external-scripts.json /hubot/
+</code></pre>
+    </div>
+  </li>
+  <li>
+    <p><strong>Custom scripts:</strong> That’s the easiest and fastest way to add your self written scripts without publishing them to npm. Just add the <a href="https://github.com/pgarbe/tatsu-hubot/blob/master/hubot-leitwerk.coffee">(coffee) script file</a> to your container.</p>
+
+    <div class="highlighter-rouge"><pre class="highlight"><code> ADD hubot-leitwerk.coffee /hubot/scripts/
+</code></pre>
+    </div>
+  </li>
+</ol>
+
+<h4 id="integrate-with-slack">Integrate with Slack</h4>
+<p>We use <a href="https://slack.com">Slack</a> as chat tool. Luckily there is an adapter and the installation is also easy. At the end of our <a href="https://github.com/pgarbe/tatsu-hubot/blob/master/Dockerfile">Dockerfile</a> when we start HuBot we have to define the desired adapter.
+    RUN npm install hubot-slack –save &amp;&amp; npm install
+    CMD bin/hubot -a slack</p>
+
+<h4 id="let-it-run">Let it run</h4>
+
+<p>To run HuBot first build the container and start it. In addition you have to give the slack adapter a security token. As I don’t want to share that token with all of you it’s not part of the Dockerfile but I  pass it as environment variable when I start the container instance.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code># Build the container
+docker build -t hubot .
+
+# And run it
+docker run -e HUBOT_SLACK_TOKEN=xxx -d tatsu
+</code></pre>
+</div>
+
+<h3 id="to-be-continued">To be continued</h3>
+<p>Running HuBot inside a Docker container was just the beginning for me. It’s amazing how fast I could start and run it w/out any experience with Docker or nodejs.</p>
+
+<p>The <a href="http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/">next blog post</a> will show how I deploy the container to AWS.</p>
+
+</article>
+
+
+
+
+
+<section class="rss">
+  <p class="rss-subscribe text"><strong>Subscribe <a href="http://feeds.feedburner.com/pgarbe">via RSS</a></strong></p>
+</section>
+
+<section class="share">
+  <span>Share: </span>
+
+
+
+      <a href="//twitter.com/share?text=How+to+run+HuBot+in+Docker+on+AWS+EC2+Container+Services+-+Part+1&url=http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/&via=pgarbe"
+        onclick="window.open(this.href, 'twitter-share', 'width=550,height=255');return false;">
+        <i class="fa fa-twitter-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.facebook.com/sharer.php?t=How+to+run+HuBot+in+Docker+on+AWS+EC2+Container+Services+-+Part+1&u=http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/"
+        onclick="window.open(this.href, 'facebook-share', 'width=550,height=255');return false;">
+        <i class="fa fa-facebook-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.linkedin.com/shareArticle?mini=true&url=http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/"
+        onclick="window.open(this.href, 'linkedin-share', 'width=550,height=255');return false;">
+        <i class="fa fa-linkedin-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+      <a href="//plus.google.com/share?title=How+to+run+HuBot+in+Docker+on+AWS+EC2+Container+Services+-+Part+1&url=http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/"
+        onclick="window.open(this.href, 'google-plus-share', 'width=550,height=255');return false;">
+        <i class="fa fa-google-plus-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.pinterest.com/pin/create/button/?description=How+to+run+HuBot+in+Docker+on+AWS+EC2+Container+Services+-+Part+1&url=http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/&media=http://pgarbe.github.io/assets/header_image.jpg"
+        onclick="window.open(this.href, 'pinterest-share', 'width=550,height=255');return false;">
+        <i class="fa fa-pinterest-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.reddit.com/submit" onclick="window.location = '//www.reddit.com/submit?url=' + encodeURIComponent('http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/') + '&title=How to run HuBot in Docker on AWS EC2 Container Services - Part 1'; return false">
+        <i class="fa fa-reddit-square fa-lg"></i>
+      </a>
+
+
+</section>
+
+
+
+
+<section class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'pgarbe';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</section>
+
+
+
+</div>
+</div>
+
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h3 class="footer-heading">Philipp&#180;s Blog</h3>
+
+    <div class="site-navigation">
+
+      <p><strong>Site Map</strong></p>
+      <ul class="pages">
+
+
+          <li class="nav-link"><a href="/about/">About Me</a>
+
+
+
+
+
+
+
+
+
+          <li class="nav-link"><a href="/speaker/">Speaker</a>
+
+
+
+
+      </ul>
+    </div>
+
+    <div class="site-contact">
+
+      <p><strong>Contact</strong></p>
+      <ul class="social-media-list">
+        <li>
+          <a href="mailto:blog@garbe.io">
+            <i class="fa fa-envelope-o"></i>
+            <span class="username">blog@garbe.io</span>
+          </a>
+        </li>
+
+
+
+          <li>
+            <a href="https://twitter.com/pgarbe" title="Follow me on Twitter">
+              <i class="fa fa-twitter"></i>
+              <span class="username">pgarbe</span>
+            </a>
+          </li>
+
+
+
+
+
+          <li>
+            <a href="https://github.com/pgarbe" title="Fork me on GitHub">
+              <i class="fa fa-github"></i>
+              <span class="username">pgarbe</span>
+            </a>
+          </li>
+
+
+
+          <li>
+            <a href="https://www.linkedin.com/in/pgarbe" title="Connect with me on LinkedIn">
+              <i class="fa fa-linkedin"></i>
+              <span class="username">Philipp Garbe</span>
+            </a>
+          </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </ul>
+    </div>
+
+    <div class="site-signature">
+      <p class="rss-subscribe text"><strong>Subscribe <a href="http://feeds.feedburner.com/pgarbe">via RSS</a></strong></p>
+      <p class="text">From Bavaria to the Cloud. My blog about AWS, Docker and Continuous Delivery.
+</p>
+    </div>
+
+  </div>
+
+</footer>
+
+<!-- Scripts -->
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/highlight.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/js/lightbox.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+  // Syntax highlighting
+  hljs.initHighlightingOnLoad();
+
+  // Header
+  var menuToggle = $('#js-mobile-menu').unbind();
+  $('#js-navigation-menu').removeClass("show");
+  menuToggle.on('click', function(e) {
+    e.preventDefault();
+    $('#js-navigation-menu').slideToggle(function(){
+      if($('#js-navigation-menu').is(':hidden')) {
+        $('#js-navigation-menu').removeAttr('style');
+      }
+    });
+  });
+
+
+});
+
+</script>
+
+
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-46808769-1', 'auto');
+  ga('send', 'pageview', {
+    'page': '/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/',
+    'title': 'How to run HuBot in Docker on AWS EC2 Container Services - Part 1'
+  });
+</script>
+
+
+
+  </body>
+
+</html>

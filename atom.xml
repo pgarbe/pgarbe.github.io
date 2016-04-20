@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Philipp&amp;#180;s Blog</title>
+    <description>From Bavaria to the Cloud. My blog about AWS, Docker and Continuous Delivery.
+</description>
+    <link>http://pgarbe.github.io/</link>
+    <atom:link href="http://pgarbe.github.io/atom.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Tue, 19 Apr 2016 15:16:06 +0200</pubDate>
+    <lastBuildDate>Tue, 19 Apr 2016 15:16:06 +0200</lastBuildDate>
+    <generator>Jekyll v3.0.3</generator>
+    
+      <item>
+        <title>3, 2, 1, 0 - How many integration environments do you need?</title>
+        <description>&lt;p&gt;How many integration environments do you have? What’s the purpose of them? Do you really need them?
+Do they enable you to deliver your applications continuously?&lt;/p&gt;
+
+&lt;h2 id=&quot;the-pains&quot;&gt;The Pains&lt;/h2&gt;
+&lt;p&gt;A couple of years ago, I was used to have 4 environments where my application had to be deployed. Over the years the maintenance of all of these environments became painful.&lt;/p&gt;
+
+&lt;p&gt;One problem was that they differ from production environment (some more, some less). The teams had to deal with bugs which were related to the environment itself but not with bugs of the application.&lt;/p&gt;
+
+&lt;p&gt;The other problem was that it took quite a while until your changes have been deployed from CI to Stable, Ref and finally Live (the names of our environments). It was frustrating to wait so long to see the benefits of your changes.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;These days you had to wait for several days until your commit was published to production. You might argue that this is quite fast. But believe me: You always want more. You get addicted to faster releases. Right now I’m complaining that a cycle time of 20 minutes (from commit to production) is quite long.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;the-cloud&quot;&gt;The Cloud&lt;/h2&gt;
+&lt;p&gt;A lot of things have been changed after we decided to &lt;a href=&quot;http://inside.autoscout24.com/project_tatsu/2015/01/04/autoscout24-changes-technology-aws-linux-jvm/&quot;&gt;migrate to the cloud&lt;/a&gt;. We were able to establish &lt;a href=&quot;http://martinfowler.com/bliki/ImmutableServer.html&quot;&gt;immutable servers&lt;/a&gt; and &lt;a href=&quot;http://martinfowler.com/bliki/InfrastructureAsCode.html&quot;&gt;Infrastructure as Code&lt;/a&gt; as a default for our new services. This helped a lot to get rid of unnecessary environments. The teams now are dealing only with two environments, &lt;code class=&quot;highlighter-rouge&quot;&gt;Dev&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;Prod&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;But after while this also feels too cumbersome for me. Let me explain:&lt;/p&gt;
+
+&lt;p&gt;We realized that the truth is not in the code but in production. As we &lt;a href=&quot;http://inside.autoscout24.com/talks/2016/01/13/microservice-ui-composition/&quot;&gt;compose our pages dynamically&lt;/a&gt; you can run integration tests only in production, because you don’t know which version of a dependent service is currently released and if it’s the same version as on your staging environment.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/staging_environments.png&quot; alt=&quot;Different versions on different environments&quot; /&gt;
+Let’s imagine you own &lt;em&gt;Service A&lt;/em&gt; and test your version 2 on &lt;code class=&quot;highlighter-rouge&quot;&gt;Staging&lt;/code&gt; against version 5 of &lt;em&gt;Service B&lt;/em&gt;. What happens if you release it to &lt;code class=&quot;highlighter-rouge&quot;&gt;Prod&lt;/code&gt;? Suddenly your service runs against version 4 of &lt;em&gt;Service B&lt;/em&gt; which was not tested. Or you still have version 1 in &lt;code class=&quot;highlighter-rouge&quot;&gt;Prod&lt;/code&gt; and run successfully against version 4 of &lt;em&gt;Service B&lt;/em&gt;. What happens when &lt;em&gt;Service B&lt;/em&gt; releases version 5?&lt;/p&gt;
+
+&lt;p&gt;Because of that, monitoring becomes very important.&lt;/p&gt;
+
+&lt;p&gt;Integration in production leads to other challenges. How can you work on new features? How can you test the integration with other services before your users will be affected? The answer can fill another blog post but a lot of issues can be solved by feature toggles.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;There is a really good overview of Feature Toggles by Pete Hodgson &lt;a href=&quot;http://martinfowler.com/articles/feature-toggles.html&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Now integration tests run on prod, we also monitor prod, so why should we keep the &lt;code class=&quot;highlighter-rouge&quot;&gt;Dev&lt;/code&gt; environment? Currently one reason is to test the deployment of your application. When you deal with &lt;a href=&quot;https://aws.amazon.com/cloudformation/&quot;&gt;CloudFormation&lt;/a&gt; these changes can’t be tested locally, so it makes sense to have an environment where you can run this tests.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I use the term &lt;em&gt;test&lt;/em&gt; on purpose to ensure that this environment should only be used to &lt;em&gt;test&lt;/em&gt; your deployments. It shouldn’t be abused as an integration environment where you maybe check your latest hack before it goes to production.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;the-containers&quot;&gt;The Containers&lt;/h2&gt;
+&lt;p&gt;When you think about Docker (or Containers in general) you might notice that even this &lt;code class=&quot;highlighter-rouge&quot;&gt;Dev&lt;/code&gt; environment is not needed anymore. You can test your container already during the build phase. And it’s the same container which will be deployed to production. There is no benefit anymore to deploy it to an artificial &lt;code class=&quot;highlighter-rouge&quot;&gt;Dev&lt;/code&gt; environment.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-learnings&quot;&gt;The Learnings&lt;/h2&gt;
+&lt;p&gt;So, how many integration environments do I need? Actually none. Integration on prod can work. But it needs a mature team which knows how to handle the risks and is aware of techniques like Release Toggles, BlueGreen Deployments or Canary Releases.&lt;/p&gt;
+
+&lt;p&gt;What I currently still need is an environment where I can test my infrastructure changes. Hopefully with containers this will also get less and less important.&lt;/p&gt;
+
+&lt;p&gt;What do you think? How many environments do you have?&lt;/p&gt;
+</description>
+        <pubDate>Mon, 11 Apr 2016 06:22:08 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2016/04/11/3-2-1-0-how-many-integration-environments-do-you-need/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2016/04/11/3-2-1-0-how-many-integration-environments-do-you-need/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to run HuBot in Docker on AWS EC2 Container Services - Part 4</title>
+        <description>&lt;p&gt;You might say that I showed already in the first three parts (see &lt;a href=&quot;http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/&quot;&gt;here&lt;/a&gt;, &lt;a href=&quot;http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/&quot;&gt;here&lt;/a&gt; and &lt;a href=&quot;http://pgarbe.github.io/blog/2015/07/10/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-3/&quot;&gt;here&lt;/a&gt;) how to run HuBot on AWS EC2 Container Services (ECS). That’s true but since AWS CloudFormation also supports ECS I wanted to deploy HuBot as a CloudFormation stack.&lt;/p&gt;
+
+&lt;p&gt;If you feel confused with all the names (container, cluster, service and so on) have a look to the &lt;a href=&quot;http://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html&quot;&gt;ECS component description&lt;/a&gt;. I tried to stick on these terms.&lt;/p&gt;
+
+&lt;h2 id=&quot;setting-up-ecs-with-cloudformation&quot;&gt;Setting up ECS with CloudFormation&lt;/h2&gt;
+&lt;p&gt;AWS provides a nice &lt;a href=&quot;http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-ecs.html&quot;&gt;CloudFormation template&lt;/a&gt; which gives you an example how you can create an EC2 Cluster and an ECS service.
+That’s a good start but what I want is to have two stacks:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Stack “Cluster”:&lt;/strong&gt; Creates the ECS cluster and EC2 cluster instance. AutoScaling of the cluster is also defined here. (&lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/ecs-cluster-stack.json&quot;&gt;source code&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Stack “Service”:&lt;/strong&gt; Registers task definition file and service. Creates ELB for the container. (&lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/tatsu-hubot-stack.json&quot;&gt;source code&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;Separating the stacks helps me to get the benefits of ECS. One stack is responsible for the ECS cluster and how to scale it. It gives me a cluster where I can start my container instances.&lt;/p&gt;
+
+&lt;p&gt;The service stack on the other side only takes care about the docker-based ECS service. I can have multiple of these stacks (with different applications) and run the instances on the ECS cluster of the first stack.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hubot_ecs.png&quot; alt=&quot;Two CloudFormation stacks for ECS cluster and ECS service&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;stacking-of-stacks&quot;&gt;Stacking of stacks&lt;/h4&gt;
+&lt;p&gt;When you’re familiar with CloudFormation you know that names of resources gets a generated name by CloudFormation. Also the name of my ECS Cluster. In my Cluster-Stack we have the ECSCluster name as output parameter and I need this value as input parameter of our Service-Stack.&lt;/p&gt;
+
+&lt;p&gt;Luckily my colleagues &lt;a href=&quot;http://atombrenner.blogspot.de/&quot;&gt;Christian Rodemeyer&lt;/a&gt; and Johannes Müller wrote already a ruby module to manage AWS CloudFormation stacks a little bit better than the AWS SDK and published it &lt;a href=&quot;https://github.com/autoscout24/autostacker24&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;One feature of AutoStacker24 is to read output parameters of an existing stack and merge the values to the given parameters of the current stack file. Therefore the new stack can easily reference resources (like ECSCluster name) from a parent stack.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hubot_autostacker24.png&quot; alt=&quot;Stacking stacks with AutoStacker24&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;security-drawbacks&quot;&gt;Security drawbacks&lt;/h4&gt;
+&lt;p&gt;Unfortunately ECS does not support IAM policies for containers. All policies have to be defined for ECS container instances and so all services (in the same ECS cluster) have the same rights.&lt;/p&gt;
+
+&lt;p&gt;In my example I wanted to setup one ECS cluster for multiple different applications (like HuBot) so that I don’t waste too many resources and to make it easy to deploy a new application.&lt;/p&gt;
+
+&lt;p&gt;But from a security point of view this is dangerous. It would be better if the policies could be defined for each container. I hope that the ECS team will build this feature in the near future. In the meantime I’d suggest for security critical applications to setup an own ECS cluster for each service.&lt;/p&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;This is the last post of this little series. You can find the whole source code in my GitHub &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot&quot;&gt;repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I love feedback so feel to contact me on &lt;a href=&quot;https://twitter.com/pgarbe&quot;&gt;twitter&lt;/a&gt; or leave some comments here.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 24 Aug 2015 14:04:25 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2015/08/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-4/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2015/08/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-4/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to run HuBot in Docker on AWS EC2 Container Services - Part 3</title>
+        <description>&lt;p&gt;In &lt;a href=&quot;http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/&quot;&gt;part 1&lt;/a&gt; I explained how to run HuBot inside a Docker container. &lt;a href=&quot;http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/&quot;&gt;Part 2&lt;/a&gt; was about setting up a continuous deployment pipeline. This part shows you how you could handle your secrets like API Keys, usernames and passwords.&lt;/p&gt;
+
+&lt;h2 id=&quot;hide-your-secrets&quot;&gt;Hide your secrets&lt;/h2&gt;
+&lt;p&gt;HuBot uses environment variables to configure scripts. For example the variable &lt;code class=&quot;highlighter-rouge&quot;&gt;HUBOT_SLACK_TOKEN&lt;/code&gt; is used to store the API Key of the Slack adapter. With ECS you can have the variables inside the docker file or as part of the task-definition file. But storing such sensitive data inside a repository is not a good idea. Even if its a private repository it can be viewed by more people than necessary. &lt;del&gt;Security by obscurity&lt;/del&gt; (Edited) The principle of least privilege is also in this case the preferable way.d&lt;/p&gt;
+
+&lt;p&gt;An advice you often hear is to keep secrets in a s3 bucket and define a restrictive policy to access it. But how do I get it inside my container? I got another helpful idea from &lt;a href=&quot;https://michaelwittig.info/&quot;&gt;Michael Wittig&lt;/a&gt;. He suggested to store all my secrets in an &lt;code class=&quot;highlighter-rouge&quot;&gt;env.sh&lt;/code&gt; file like this and put it manually on s3.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;export HUBOT_SLACK_TOKEN=xxx
+export HUBOT_AUTH_ADMIN=xxx
+export HUBOT_SLACK_ADMIN=xxx
+export HUBOT_GITHUB_KEY=xxx
+export HUBOT_GOCD_USERNAME=xxx
+export HUBOT_GOCD_PASSWORD=xxx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Inside my dockerfile I should load that file and execute it immediately just before I launch my application.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;CMD [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;aws s3 cp --region eu-west-1 s3://your-bucket/env.sh .; . ./env.sh; bin/hubot --adapter slack&quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;This command starts a shell and downloads the &lt;code class=&quot;highlighter-rouge&quot;&gt;env.sh&lt;/code&gt; file from my secured s3 bucket. Next it executes that file so that the environment variables are set and finally starts HuBot.&lt;/p&gt;
+
+&lt;p&gt;That’s it. With this little trick I can keep my secrets in my secured s3 bucket and I don’t have to commit them to my repository. You can find all the sources on my &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot&quot;&gt;GitHub repo&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;In my &lt;a href=&quot;http://pgarbe.github.io/blog/2015/08/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-4/&quot;&gt;next blog post&lt;/a&gt; I will change my previous implementation of continuous deployment and use CloudFormation to deploy the whole stack. &lt;a href=&quot;http://feeds.feedburner.com/pgarbe&quot;&gt;Subscribe&lt;/a&gt; to my blog so you won’t miss it.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 10 Jul 2015 07:17:05 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2015/07/10/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-3/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2015/07/10/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-3/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>AWS Ruby SDK and my confusion with portMappings</title>
+        <description>&lt;p&gt;When you use the &lt;a href=&quot;http://aws.amazon.com/sdk-for-ruby/&quot;&gt;AWS Ruby SDK&lt;/a&gt; to register your ECS task definition files you maybe struggle with the same error I struggled around.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ArgumentError: unexpected value at params[:container_definitions][0][&quot;portMappings&quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The same error message was also returned when I tried to define mountPoints.&lt;/p&gt;
+
+&lt;p&gt;The short answer is that the AWS Ruby SDK use also Rubyish snake_case instead of camelBack JSON-style. After changing “portMappings” into “port_mappings” everything worked (same applies to containerPort and hostPort).&lt;/p&gt;
+
+&lt;p&gt;If I had started with Ruby directly I would maybe never run into that situation because it’s well &lt;a href=&quot;http://docs.aws.amazon.com/sdkforruby/api/Aws/ECS/Client.html#register_task_definition-instance_method&quot;&gt;documented&lt;/a&gt;. But I started with the AWS Command Line Interface (CLI) to play around with ECS and I also had my task definition in a separate file.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;aws ecs register-task-definition --cli-input-json file://&amp;lt;path_to_json_file&amp;gt;/hubot_task_definiton.json
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Based on that I &lt;a href=&quot;pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/&quot;&gt;started&lt;/a&gt; with the automation and reused my existing task definiton file.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ecs.register_task_definition(family: &quot;HuBot&quot;, container_definitions: JSON.parse(taskDefintion))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;After that confusion I can now also define port mappings as well as mount points. The later I need for my idea to have secret keys as environment variables inside a docker container instead of defining them in the task definition file. Of course, if it works I’ll post my solution.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 15 May 2015 12:25:25 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2015/05/15/aws-ruby-sdk-and-my-confusion-with-portmappings/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2015/05/15/aws-ruby-sdk-and-my-confusion-with-portmappings/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to run HuBot in Docker on AWS EC2 Container Services - Part 2</title>
+        <description>&lt;p&gt;In &lt;a href=&quot;http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/&quot;&gt;part 1&lt;/a&gt; I explained how to run HuBot inside a Docker container. Now I’ll show you how to set up a continuous deployment pipeline in order to deploy docker images automatically to AWS EC2 Container Services (ECS).&lt;/p&gt;
+
+&lt;p&gt;A couple of days after I wrote the previous post ECS became &lt;a href=&quot;https://aws.amazon.com/blogs/aws/ec2-container-service-ready-for-production-use/&quot;&gt;public available&lt;/a&gt;. AWS also introduced support for long-running applications. Even while I don’t need the automatic load balancing and scaling to run HuBot the update management of the introduced service scheduler makes deployment very easy.&lt;/p&gt;
+
+&lt;p&gt;Before I start, I want to let you know that all the scripts can also be found on my GitHub &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot&quot;&gt;repository&lt;/a&gt;. I also want to mention &lt;a href=&quot;https://blogs.aws.amazon.com/application-management/post/Tx32RHFZHXY6ME1/Set-up-a-build-pipeline-with-Jenkins-and-Amazon-ECS&quot;&gt;this&lt;/a&gt; blog post which was a good template and inspiration for my solution.&lt;/p&gt;
+
+&lt;p&gt;Ok, but now let’s go!&lt;/p&gt;
+
+&lt;h2 id=&quot;build-and-test&quot;&gt;Build and Test&lt;/h2&gt;
+&lt;p&gt;I’m used to that every time I make some changes on a repository a build gets triggered and my changes are immediately built and tested. That’s what I also expect from a docker based solution. One of the few managed CI services that currently supports generating docker images is &lt;a href=&quot;https://circleci.com/&quot;&gt;CircleCI&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;After signing up all I had to do was to select my GitHub repository that should be watched and CircleCI automatically added a webhook on my &lt;a href=&quot;https://circleci.com/gh/pgarbe/tatsu-hubot&quot;&gt;repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To tell CircleCI what to do with my code it needs a configuration file called &lt;code class=&quot;highlighter-rouge&quot;&gt;circle.yml&lt;/code&gt;. The setup for my container is pretty simple as you can see here.&lt;/p&gt;
+
+&lt;script src=&quot;https://gist.github.com/5f478284fa5de86fe885.js&quot;&gt; &lt;/script&gt;
+
+&lt;p&gt;You might wonder why I use the build number to tag the docker image. For now it enables me to identify the matching docker image for each build. We’ll see later that it’s also important for deployment.&lt;/p&gt;
+
+&lt;p&gt;The test step is for now just a simple verification if the container can be started. For web applications this might be the right moment to send some http requests to test the application inside the docker container.&lt;/p&gt;
+
+&lt;p&gt;At the end the generated container will be pushed to &lt;a href=&quot;https://registry.hub.docker.com/u/pgarbe/tatsu-hubot/&quot;&gt;docker hub&lt;/a&gt;. But also a private docker registry can be used in this step. The rake task at the very end starts the deployment to ECS.&lt;/p&gt;
+
+&lt;h2 id=&quot;continuous-deployment-to-ecs&quot;&gt;Continuous Deployment to ECS&lt;/h2&gt;
+&lt;p&gt;In order to run docker containers on AWS ECS you have to setup at least one EC2 machine that runs the ECS agent. The AWS documentation is much better than I could ever explain so please read it &lt;a href=&quot;http://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_GetStarted.html&quot;&gt;here&lt;/a&gt; and follow the instructions.&lt;/p&gt;
+
+&lt;p&gt;Next is to define a task definition file which can be a set of docker images that needs to run together.&lt;/p&gt;
+
+&lt;script src=&quot;https://gist.github.com/1f695b7167451ceefb5f.js&quot;&gt; &lt;/script&gt;
+
+&lt;p&gt;Note that there are no portMappings in the moment. It seems that there is a bug in the ruby sdk. When the portMappings are defined the register method throws an &lt;code class=&quot;highlighter-rouge&quot;&gt;ArgumentError: unexpected value at params[:container_definitions][0][&quot;portMappings&quot;]&lt;/code&gt; error. Luckily I don’t need the mappings right now for HuBot. For obvious reasons I did also not test how to setup ELB and get it working together with the docker container.&lt;/p&gt;
+
+&lt;p&gt;The rake script which I use for deployment registers the task definition and creates a service. When the service already exists it updates the service with the new task definition file and the desired count of instances.&lt;/p&gt;
+
+&lt;p&gt;In this script I also use the build number. The placeholder in the task definition file will be replaced by the actual number so that ECS takes the corresponding image from the Docker Hub. So it’s ensured that when a newer image exists on Docker Hub and ECS creates a new task instance (for example the container crashed) the same image is used and not a newer one.&lt;/p&gt;
+
+&lt;script src=&quot;https://gist.github.com/ff6f9748758185afcfd1.js&quot;&gt; &lt;/script&gt;
+
+&lt;p&gt;All you have to do now is to push your changes to GitHub and wait a couple of minutes until the new container is deployed.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;With the support of long-running applications ECS feels now mature enough to have a closer look on it. It still feels not complete (compared to other AWS products). For example not all error messages are clear and you have to understand the terminology of tasks, task definitions, services, container instances, schedulers and so on. It’s also difficult to find answers to problems on google because except the offical AWS documentation there is not much to find.&lt;/p&gt;
+
+&lt;p&gt;On the other side it makes a lot of fun to see how fast your code changes can go live and how easy it is to create a new docker-based application and deploy it (automatically).&lt;/p&gt;
+
+&lt;p&gt;See &lt;a href=&quot;http://pgarbe.github.io/blog/2015/07/10/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-3/&quot;&gt;part 3&lt;/a&gt; how to deal with secrets.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 11 May 2015 19:53:16 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to run HuBot in Docker on AWS EC2 Container Services - Part 1</title>
+        <description>&lt;p&gt;It all began when I was too lazy to check the website of our local &lt;a href=&quot;http://www.leonardi-kg.de/&quot;&gt;canteen&lt;/a&gt; to find out todays lunch menu. Ok, it’s only a couple of clicks and not actual “work” but hey…&lt;/p&gt;
+
+&lt;p&gt;I have already played around with &lt;a href=&quot;https://github.com/github/hubot&quot;&gt;HuBot&lt;/a&gt; in the past and I’m also very excited about &lt;a href=&quot;https://www.docker.com/&quot;&gt;Docker&lt;/a&gt; so the idea raised to combine these things. And because &lt;a href=&quot;http://inside.autoscout24.com/2015/01/04/autoscout24-changes-technology-aws-linux-jvm&quot;&gt;we are in the cloud now&lt;/a&gt; it has to be hosted on AWS as well. Meanwhile AWS published the new &lt;a href=&quot;http://aws.amazon.com/ecs/&quot;&gt;EC2 Container Service (ECS)&lt;/a&gt; in Ireland so I had everything I needed. Let me share my experiences (and some code) with you.&lt;/p&gt;
+
+&lt;h3 id=&quot;big-picture&quot;&gt;Big Picture&lt;/h3&gt;
+&lt;p&gt;The idea is to have all relevant sources in one GitHub repository. With each commit a build should be triggered and when the tests are green it should automatically deployed to AWS EC2 Container Service (ECS).&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GitHub -&amp;gt; CircleCI -&amp;gt; Docker Hub -&amp;gt; AWS ECS
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Sources are available on my &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot&quot;&gt;GitHub repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;run-hubot-in-docker-container&quot;&gt;Run HuBot in Docker container&lt;/h3&gt;
+&lt;p&gt;Installing HuBot is quite easy. You can find a good documentation &lt;a href=&quot;https://hubot.github.com/docs/&quot;&gt;here&lt;/a&gt;. With Docker it’s also very easy. First of all we need to define all requirements:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FROM ubuntu
+
+RUN apt-get update
+RUN apt-get -y install expect redis-server nodejs npm
+RUN ln -s /usr/bin/nodejs /usr/bin/node
+
+RUN npm install -g coffee-script
+RUN npm install -g yo generator-hubot
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;create-your-own-user&quot;&gt;Create your own user&lt;/h4&gt;
+&lt;p&gt;Normally you would run “yo hubot” to create a new instance but that leads to the exception  &lt;em&gt;Error: EACCES, permission denied ‘/root/.config/configstore/insight-yo.yml’&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The reason is that &lt;a href=&quot;https://github.com/yeoman/yo/issues/101&quot;&gt;yo doesn’t run as root user&lt;/a&gt;. So we have to create our own user and switch to it.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Create hubot user
+RUN	useradd -d /hubot -m -s /bin/bash -U hubot
+
+# Log in as hubot user and change directory
+USER	hubot
+WORKDIR /hubot
+
+# Install hubot
+RUN yo hubot --owner=&quot;You&quot; --name=&quot;HuBot&quot; --description=&quot;HuBot on Docker&quot; --defaults
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;adding-custom-scripts&quot;&gt;Adding custom scripts&lt;/h4&gt;
+&lt;p&gt;The next step is to load some scripts. HuBot supports three different ways to install custom scripts.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Built-in scripts&lt;/strong&gt;: HuBot is shipped with some built-in scripts which are disabled by default. All you need is a &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/hubot-scripts.json&quot;&gt;hubot-scripts.json&lt;/a&gt; file where you define all the scripts which should be enabled. This file has to be added to your container&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ADD hubot-scripts.json /hubot/
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Community scripts&lt;/strong&gt;: Scripts from the community can be installed by npm. In addition these scripts have also be enabled in a &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/external-scripts.json&quot;&gt;external-scripts.json&lt;/a&gt; file which needs also be added to the container.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; RUN npm install hubot-standup-alarm --save &amp;amp;&amp;amp; npm install
+ ADD external-scripts.json /hubot/
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Custom scripts:&lt;/strong&gt; That’s the easiest and fastest way to add your self written scripts without publishing them to npm. Just add the &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/hubot-leitwerk.coffee&quot;&gt;(coffee) script file&lt;/a&gt; to your container.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ADD hubot-leitwerk.coffee /hubot/scripts/
+&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;integrate-with-slack&quot;&gt;Integrate with Slack&lt;/h4&gt;
+&lt;p&gt;We use &lt;a href=&quot;https://slack.com&quot;&gt;Slack&lt;/a&gt; as chat tool. Luckily there is an adapter and the installation is also easy. At the end of our &lt;a href=&quot;https://github.com/pgarbe/tatsu-hubot/blob/master/Dockerfile&quot;&gt;Dockerfile&lt;/a&gt; when we start HuBot we have to define the desired adapter.
+    RUN npm install hubot-slack –save &amp;amp;&amp;amp; npm install
+    CMD bin/hubot -a slack&lt;/p&gt;
+
+&lt;h4 id=&quot;let-it-run&quot;&gt;Let it run&lt;/h4&gt;
+
+&lt;p&gt;To run HuBot first build the container and start it. In addition you have to give the slack adapter a security token. As I don’t want to share that token with all of you it’s not part of the Dockerfile but I  pass it as environment variable when I start the container instance.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Build the container
+docker build -t hubot .
+
+# And run it
+docker run -e HUBOT_SLACK_TOKEN=xxx -d tatsu
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;to-be-continued&quot;&gt;To be continued&lt;/h3&gt;
+&lt;p&gt;Running HuBot inside a Docker container was just the beginning for me. It’s amazing how fast I could start and run it w/out any experience with Docker or nodejs.&lt;/p&gt;
+
+&lt;p&gt;The &lt;a href=&quot;http://pgarbe.github.io/blog/2015/05/11/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-2/&quot;&gt;next blog post&lt;/a&gt; will show how I deploy the container to AWS.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 24 Mar 2015 08:28:58 +0100</pubDate>
+        <link>http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2015/03/24/how-to-run-hubot-in-docker-on-aws-ec2-container-services-part-1/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Impressions from QCon San Francisco 2014</title>
+        <description>&lt;p&gt;This year &lt;a href=&quot;http://about.autoscout24.com/&quot;&gt;AutoScout24&lt;/a&gt; was generous again to let me go to &lt;a href=&quot;https://www.qconsf.com/&quot;&gt;QCon Conference in San Francisco&lt;/a&gt;. The overall topic was “Software is changing the world”. Let me share my impressions with you.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/qcon2014_goldengate.jpg&quot; alt=&quot;Obligatory picture from Golden Gate Bridge&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;##Location&lt;/p&gt;
+
+&lt;p&gt;After 2012 this is the second time I went to QCon in San Francisco. The conference is organized by &lt;a href=&quot;http://www.infoq.com/&quot;&gt;InfoQ&lt;/a&gt; and took place again at the &lt;a href=&quot;https://goo.gl/maps/LCoCB&quot;&gt;Hyatt Regency Hotel&lt;/a&gt;. It was sold out and the rooms were almost too crowded.&lt;/p&gt;
+
+&lt;p&gt;It seems that people in San Francisco are very healthy. There were no softdrinks, just water, tea and coffee. Also the food was more for vegeterians. I missed some good old American steaks :)&lt;/p&gt;
+
+&lt;p&gt;On the other site it´s a nice hotel and easy to reach. The BART station as well as the Cable Car turntable is next to the hotel. Market street and Union Square are in a walking distance.&lt;/p&gt;
+
+&lt;p&gt;##Talks&lt;/p&gt;
+
+&lt;p&gt;If I had to describe the conference this year in three words it would be: &lt;strong&gt;reactive&lt;/strong&gt;, &lt;strong&gt;functional&lt;/strong&gt; &amp;amp; &lt;strong&gt;microservices&lt;/strong&gt;. Obviously that´s my opinion. There were also a lot of other talks about engineering culture, continuous deployment and architectures and and and. Unfortunatley I couldn´t attend them all.&lt;/p&gt;
+
+&lt;p&gt;It´s hard to summarize what I´ve learned. There were so many little but interesting details. Reactive Extensions (Rx) is definitely a technology I have to evaluate further. Netflix showed how they use Rx to solve problems with race conditions, uncaught exceptions from async calls and concurrency.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Concurrency and async are non-trivial. Rx doesn’t trivialize it. Rx is powerful and rewards those who go through the learning curve.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Ben Christansen - &lt;em&gt;Netflix&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;It was also impressive how many developers work at companies like Netflix (~900) or LinkedIn (~1800). At LinkedIn they had a single code repository some time ago. You can imagine how long it took until you were able to commit your code.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;If you don´t end up regretting your early technology decisions, you probably over-engineered&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Randy Shoup - &lt;em&gt;&lt;a href=&quot;http://www.slideshare.net/RandyShoup/concurrency-at-scale&quot;&gt;http://www.slideshare.net/RandyShoup/…&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Microservices were everywhere. Even startups showed how they use a microservices based architecture. To ensure the code quality you often heard about dependency tests which are part of the build pipeline. If you break these tests you cannot deploy your service.&lt;/p&gt;
+
+&lt;p&gt;When you have microservices you also need a strong ownership. Teams own few services and are completely responsible for them. This also includes that devs are on call rotation.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;You think of code in a completely different way when you are up in the middle of the night dealing with an outage.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Melody Meckfessel - &lt;em&gt;Google&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Maybe because of that code reviews are mandatory for them. Your commit is not merged into the main branch until it was reviewed (e.g. with &lt;a href=&quot;https://reviewboard.org/&quot;&gt;Reviewboard&lt;/a&gt;). One company told that they have also ownership for every file.&lt;/p&gt;
+
+&lt;p&gt;This is a list of my favorite talks. The slides are already available &lt;a href=&quot;https://qconsf.com/schedule&quot;&gt;here&lt;/a&gt;. The videos should be public in the next weeks / months.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/asynchronous-programming-netflix-0&quot;&gt;Asynchronous Programming at Netflix&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/functional-systems-twitter&quot;&gt;Functional Systems @Twitter&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/reactive-programming-rx&quot;&gt;Reactive Programming with Rx&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/building-and-deploying-microservices-event-sourcing-cqrs-and-docke&quot;&gt;Building and Deploying Microservices with Event Sourcing, CQRS and Docker&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/scalable-microservices-netflix-challenges-and-tools-trade&quot;&gt;Scalable Microservices at Netflix&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://qconsf.com/presentation/concurrency-large-scale-evolution-reactive-microservices&quot;&gt;Concurrency At Large-Scale: The Evolution To Reactive Microservices&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;If you know other good talks write them in the comments.&lt;/p&gt;
+
+&lt;p&gt;##Networking&lt;/p&gt;
+
+&lt;p&gt;One thing I absolutely like at the QCon in San Francisco is that you´re surrounded by all the big web companies. Developers from &lt;a href=&quot;http://techblog.netflix.com/&quot;&gt;Netflix&lt;/a&gt;, &lt;a href=&quot;https://engineering.linkedin.com/&quot;&gt;LinkedIn&lt;/a&gt;, &lt;a href=&quot;https://code.facebook.com/&quot;&gt;Facebook&lt;/a&gt;, Google and Amazon where there as well as guys from startups like &lt;a href=&quot;https://500px.com/about&quot;&gt;500px&lt;/a&gt; and many others.&lt;/p&gt;
+
+&lt;p&gt;To enforce communication the organisators of the QCon came up with nice ideas. One idea was a new designed badge. Sounds not like a big thing, but somehow the big first name forced you to look on the badge. I came in contact with many guys just because I or he looked on it.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/qcon2014_badge.jpg&quot; alt=&quot;First name as eye catcher&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Second idea was topic tables. During lunch they prepared some smaller tables (max 4 persons) with a topic (e.g. Big Data, Culture, Functional). So you had the chance to come in contact with others because you were interested in the same topic.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/qcon2014_topictables.jpg&quot; alt=&quot;Topic tables&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Anbd there was also the traditional conference party at &lt;a href=&quot;http://thirstybear.com/&quot;&gt;Thirsty Bear&lt;/a&gt; on Monday evening. The whole bar (2 floors) was crowded by nerds and beer and food was for free.&lt;/p&gt;
+
+&lt;p&gt;##Conclusion&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I have to go to #qconsf again to become gold alumni and get the fancy q-tshirt&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;me - &lt;em&gt;&lt;a href=&quot;https://twitter.com/pgarbe/status/529317839560138752&quot;&gt;https://twitter.com/pgarbe/status/…&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Of course that´s not the main reason. When you work as web developer this conference is a must. Not only they provide trending topics and interesting insights but you have also the chance to extend your network with smart people.&lt;/p&gt;
+
+&lt;p&gt;I hope we´ll see us (again) at QCon SF 2015!&lt;/p&gt;
+</description>
+        <pubDate>Fri, 14 Nov 2014 09:00:00 +0100</pubDate>
+        <link>http://pgarbe.github.io/blog/2014/11/14/impressions-from-qcon-san-francisco-2014/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2014/11/14/impressions-from-qcon-san-francisco-2014/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>My Road to Microservices</title>
+        <description>&lt;p&gt;At the moment there is a big hype about microservices. Especially since Martin Fowler wrote an &lt;a href=&quot;http://martinfowler.com/articles/microservices.html&quot;&gt;article&lt;/a&gt; about it. Also for &lt;a href=&quot;http://about.autoscout24.com/&quot;&gt;AutoScout24&lt;/a&gt; it´s a big topic. Not because of the hype but our history.&lt;/p&gt;
+
+&lt;p&gt;Let me tell you my experience over the last couple of years…&lt;/p&gt;
+
+&lt;p&gt;###Monolith&lt;/p&gt;
+
+&lt;p&gt;When I started at AutoScout24 in 2010 all teams worked together on one big monolithic web application. We had releases every 4 weeks and it took us 2 weeks to ship it. Every team had to send one member to a virtual release team where they worked together with our release manager in order to ship the code. This was painful for several reasons:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The people were partially blocked from working on their normal sprint.&lt;/li&gt;
+  &lt;li&gt;The information how to release was partially lost because we rotated the person who attended the virtual team. Another reason was because releases happend so rarely (~ 4 weeks).&lt;/li&gt;
+  &lt;li&gt;In the meantime the teams made so many changes that each release was always a big risk (and that was the reason why it took us 2 weeks to ship it).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;But we learned our lessons and improved so we could release every 2 weeks, once a week and finally several times a week (a dedicated team and automation was the key). But this was still not good enough. Sometimes when one team had to release a feature on a specific day we had to manage dependencies to the other teams so that the release was not blocked because of some (risky) code changes. Our teams were normally required to work independent and take ownership about their portfolio. So our pain now was the dependency between the teams because we worked on the same repository and had to release together.&lt;/p&gt;
+
+&lt;p&gt;So we started with Swimlanes.&lt;/p&gt;
+
+&lt;p&gt;###Swimlanes&lt;/p&gt;
+
+&lt;p&gt;About two years ago we had first discussions about killing splitting up the monolith. But how? We defined a swimlane as an independent releasable unit. In about 6 months we were able to make the whole dealer area independent from the monolith. We created a new repository and a separate build and delivery process. Now only two teams worked on that swimlane and we were happy to release independent from all other teams. At that time we were able to release several times per day. One release took about 1 hour (from code commit to live) and was fully automated. Yeah!&lt;/p&gt;
+
+&lt;p&gt;For some time we were happy (again). Also our product guys were happy because we could ship new features much much faster than before. But after a while we wanted more. We saw the drawbacks of so much independency because other teams also started their swimlane. Problems that were already solved in the monolith suddenly popped up in the swimlanes. Also starting a new swimlane was a lot of manual effort and it looked every time a bit different. It was difficult to share experiences and learnings from one team to the other teams. And we still had the feeling that the swimlanes were too big. We couldn´t name it until Martin Fowler wrote his article about microservices.&lt;/p&gt;
+
+&lt;p&gt;###Next exit: Microservices?&lt;/p&gt;
+
+&lt;p&gt;What I told you before happend already in the past. At the moment we are trying to reflect what happend and how we can learn from our failures. Are microservices the answer to our problems? We hope but actually don´t know! We invested already some time to learn how an architecture with microservices could look like. But we still have questions like: How do you split your services? How can you define the macro architecture? How much freedom do you give the teams in their micro architecture?&lt;/p&gt;
+
+&lt;p&gt;###Purpose of this blog post&lt;/p&gt;
+
+&lt;p&gt;Beginning with this post I want to start a series of posts about our journey to microservices. My intention is to write them mostly for myself so that it helps me to order my ideas, thoughts and learnings. I also want to document decisions we made and the reasons for that. Maybe this becomes useful on some day.&lt;/p&gt;
+
+&lt;p&gt;If you are also interested in our journey just &lt;a href=&quot;http://feeds.feedburner.com/pgarbe&quot;&gt;follow me&lt;/a&gt;. And give me feedback!&lt;/p&gt;
+
+&lt;p&gt;PS: If you are from Munich join our &lt;a href=&quot;http://www.meetup.com/Microservices-Meetup-Munich/&quot;&gt;Microservices Meetup&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 09 Oct 2014 14:00:00 +0200</pubDate>
+        <link>http://pgarbe.github.io/blog/2014/10/09/my-road-to-microservices/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2014/10/09/my-road-to-microservices/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>The fear of new features</title>
+        <description>&lt;p&gt;How do you feel when you think about your next release? Are you scared? Or is your operations team scared? But why are releases often so painful?&lt;/p&gt;
+
+&lt;p&gt;Most of the time releases are painful because they are not done regularly. There could be many reasons but in this post I want to talk about a not so obvious problem. The &lt;strong&gt;fear of new Features&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;To be honest, developers are normally not so scared about releasing new features, because they built it. But operations people are. Why? Devs are paid to produce new features, but Ops are paid to host a stable platform. And every change (release) is a risk.&lt;/p&gt;
+
+&lt;h2 id=&quot;continuous-delivery&quot;&gt;Continuous Delivery&lt;/h2&gt;
+&lt;p&gt;To reduce the risk of a release we can simply reduce the number of changes by releasing more often. Sounds easy but it isn´t. It needs quite some effort to build an automatic release pipeline. Have a look on the next two pictures and you can see that the risk will be reduced the more often you release because the changes per release getting less.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/bigbangreleases.png&quot; alt=&quot;BigBang Releases&quot; /&gt;
+&lt;img src=&quot;/assets/continuousdelivery.png&quot; alt=&quot;Continuous Delivery&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To be able to release that often you need &lt;a href=&quot;http://martinfowler.com/bliki/FeatureToggle.html&quot;&gt;Feature Toggles&lt;/a&gt; to work on new features without affecting the releases process. Now you can commit your changes and the feature is not visible as long as the toggle is switched off. Plus you can revert that feature without changing the code but only some config.&lt;/p&gt;
+
+&lt;p&gt;As long as new features are in development and toggled, a code release is not a big thing anymore. But what if you want to finally toggle on your feature? Then a new code release is needed with the feature toggled on. And again we have a risky release. Why? Because you enable a LOT of code with a single change.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/featuretogglerelease.png&quot; alt=&quot;BigBang Releases with Feature Toggles&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;patterns-to-the-rescue&quot;&gt;Patterns to the rescue&lt;/h2&gt;
+
+&lt;p&gt;How do we handle the risk of a new feature?&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Single Responsibility&lt;/strong&gt;&lt;br /&gt;
+Shipping code to live servers and switching on new features are in my opinion two different concerns. The first one is very technical, the later business driven. What happens when you decouple the feature releases from your code release? Code releases becomes boring for you and also for operations. At some point you maybe release every commit automatically (and that´s the &lt;a href=&quot;http://blog.crisp.se/2013/02/05/yassalsundman/continuous-delivery-vs-continuous-deployment&quot;&gt;difference&lt;/a&gt; between Continuous Delivery and Continuous Deployment).&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Make it easy to toggle on and off&lt;/strong&gt;&lt;br /&gt;
+It should be easy to toggle a feature on. Just a click. Everyone in your team should be able to do it. When the feature is accepted by your product guy he can immediately release it by himself.
+And it should be easy to rollback a feature when it´s not (properly) working.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Canary Release&lt;/strong&gt;&lt;br /&gt;
+To get feedback if the feature works (technically and also from a business perspective) it should be rolled out step-by-step and monitored. You maybe start only with 5% of your visitors or you show it only to Chrome users (or some other condition) and when it works increase the number of users.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Knowing how to deal with that issues is one thing, the tooling is another. Together with &lt;a href=&quot;http://www.matthias-kainer.de&quot;&gt;Matthias&lt;/a&gt; I started a new project called &lt;a href=&quot;https://github.com/autoscout24/featurebee&quot;&gt;FeatureBee&lt;/a&gt; where we want to make it easier to release new features. The idea behind FeatureBee is to make it for developers as easy as possible to toggle new features and enable Product Owners at the same time to release features when and how they want it. Without all the technical stuff like configuration files, VCS and build processes.&lt;/p&gt;
+
+&lt;p&gt;In my opinion this will change the way you and your team works. Imagine that you can release every green build automatically. You can switch features on and off whenever you want. You can test features on live environment without showing the feature to all other users. Think about it.&lt;/p&gt;
+
+&lt;p&gt;In my next blog posts I´ll show how to work with FeatureBee.&lt;/p&gt;
+
+&lt;p&gt;Happy Releasing!&lt;/p&gt;
+</description>
+        <pubDate>Thu, 16 Jan 2014 10:51:51 +0100</pubDate>
+        <link>http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Hello world</title>
+        <description>&lt;p&gt;It is a nice &lt;a href=&quot;http://en.wikipedia.org/wiki/Hello_world_program&quot;&gt;tradition&lt;/a&gt; to start with a “Hello world” program when you learn a new programming language. Although this is my first blog post, it feels also like learning a new programming language. It also helps me to get in touch with &lt;a href=&quot;http://octopress.org/&quot;&gt;Octopress&lt;/a&gt; and &lt;a href=&quot;http://pages.github.com/&quot;&gt;GitHub Pages&lt;/a&gt; where this blog is hosted. I also need to get more familiar with markdown.&lt;/p&gt;
+
+&lt;p&gt;Let me tell you some details about myself. My name is Philipp Garbe and I started programming when I was a teen (some C++ but mostly VB). After .Net was first-time released I switched to C# and it is still my favourite language. But in the last couple of months I came more and more in contact with Ruby and F#. And not to forget my love-hate relationship with JavaScript. For almost all of my projects I use git as version control and the more I work with it the more I like it. It´s not that easy at the beginning (compared to subverion) but it has a lot of power.&lt;/p&gt;
+
+&lt;p&gt;Since several years now, I work for a great &lt;a href=&quot;http://www.autoscout24.de&quot;&gt;company&lt;/a&gt; in Munich. We work in very agile teams and I have the freedom to experiment with techniques like CQRS, Event Sourcing and DDD. I also believe that  &lt;a href=&quot;http://continuousdelivery.com/&quot;&gt;Continous Delivery&lt;/a&gt; (or &lt;a href=&quot;http://continuousdelivery.com/2010/08/continuous-delivery-vs-continuous-deployment/&quot;&gt;Continous Deployment&lt;/a&gt; if possible) is fundamental for good teams and good products.&lt;/p&gt;
+
+&lt;p&gt;So, what´s next? There will be some interesting news in the next weeks. Together with my colleague &lt;a href=&quot;http://www.matthias-kainer.de&quot;&gt;Matthias&lt;/a&gt; I started a new project that should make releases less painful. I don´t want to spoiler so &lt;a href=&quot;http://pgarbe.github.io/atom.xml&quot;&gt;subscribe&lt;/a&gt; to this blog and you´ll be updated.&lt;/p&gt;
+</description>
+        <pubDate>Thu, 09 Jan 2014 09:00:00 +0100</pubDate>
+        <link>http://pgarbe.github.io/blog/2014/01/09/hello-world/</link>
+        <guid isPermaLink="true">http://pgarbe.github.io/blog/2014/01/09/hello-world/</guid>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

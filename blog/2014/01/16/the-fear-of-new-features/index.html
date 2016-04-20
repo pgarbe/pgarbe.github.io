@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=http://garbe.io/blog/2014/01/16/the-fear-of-new-features/">
+  <link rel="canonical" href="http://garbe.io/blog/2014/01/16/the-fear-of-new-features/" />
+
+  <title>The fear of new features</title>
+
+
+  <meta name="description" content="The fear of new features, decouple feature releases from code releases, from continous delivery to continuous deployment, FeatureBee">
+
+  <meta name="keywords" content="FeatureBee, Continous Delivery, Continous Deployment, Canary Releases, Feature Toggles">
+
+
+  <meta name="author" content="Philipp Garbe">
+  <meta name="copyright" content="&copy; Philipp Garbe 2016">
+
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/styles/monokai_sublime.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/css/lightbox.css">
+
+  <!-- Favicon and other icons (made with http://www.favicon-generator.org/) -->
+  <link rel="shortcut icon" href="/assets/icons/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/assets/icons/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="57x57" href="/assets/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/assets/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/assets/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/assets/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/assets/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/assets/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/assets/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="/assets/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+  <link rel="manifest" href="/assets/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/assets/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+
+
+
+
+
+
+
+  <!-- Site styles -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/">
+  <link rel="alternate" type="application/rss+xml" title="Philipp&#180;s Blog" href="http://feeds.feedburner.com/pgarbe" />
+</head>
+
+
+  <body>
+
+    <header class="navigation" role="banner">
+  <div class="navigation-wrapper">
+    <a href="/" class="logo">
+
+      <span>Philipp&#180;s Blog</span>
+
+    </a>
+    <a href="javascript:void(0)" class="navigation-menu-button" id="js-mobile-menu">
+      <i class="fa fa-bars"></i>
+    </a>
+    <nav role="navigation">
+      <ul id="js-navigation-menu" class="navigation-menu show">
+
+
+          <li class="nav-link"><a href="/about/">About Me</a>
+
+
+
+
+
+
+
+
+
+          <li class="nav-link"><a href="/speaker/">Speaker</a>
+
+
+
+
+      </ul>
+    </nav>
+  </div>
+</header>
+
+
+    <div class="page-content">
+        <div class="post">
+
+<div class="post-header-container " >
+  <div class="scrim ">
+    <header class="post-header">
+      <h1 class="title">The fear of new features</h1>
+      <p class="info">by <strong>Philipp Garbe</strong></p>
+    </header>
+  </div>
+</div>
+
+<div class="wrapper">
+
+ <span class="page-divider">
+  <span class="one"></span>
+  <span class="two"></span>
+</span>
+
+
+<section class="post-meta">
+  <div class="post-date">January 16, 2014</div>
+  <div class="post-categories">
+
+  </div>
+</section>
+
+<article class="post-content">
+  <p>How do you feel when you think about your next release? Are you scared? Or is your operations team scared? But why are releases often so painful?</p>
+
+<p>Most of the time releases are painful because they are not done regularly. There could be many reasons but in this post I want to talk about a not so obvious problem. The <strong>fear of new Features</strong>.</p>
+
+<p>To be honest, developers are normally not so scared about releasing new features, because they built it. But operations people are. Why? Devs are paid to produce new features, but Ops are paid to host a stable platform. And every change (release) is a risk.</p>
+
+<h2 id="continuous-delivery">Continuous Delivery</h2>
+<p>To reduce the risk of a release we can simply reduce the number of changes by releasing more often. Sounds easy but it isn´t. It needs quite some effort to build an automatic release pipeline. Have a look on the next two pictures and you can see that the risk will be reduced the more often you release because the changes per release getting less.</p>
+
+<p><img src="/assets/bigbangreleases.png" alt="BigBang Releases" />
+<img src="/assets/continuousdelivery.png" alt="Continuous Delivery" /></p>
+
+<p>To be able to release that often you need <a href="http://martinfowler.com/bliki/FeatureToggle.html">Feature Toggles</a> to work on new features without affecting the releases process. Now you can commit your changes and the feature is not visible as long as the toggle is switched off. Plus you can revert that feature without changing the code but only some config.</p>
+
+<p>As long as new features are in development and toggled, a code release is not a big thing anymore. But what if you want to finally toggle on your feature? Then a new code release is needed with the feature toggled on. And again we have a risky release. Why? Because you enable a LOT of code with a single change.</p>
+
+<p><img src="/assets/featuretogglerelease.png" alt="BigBang Releases with Feature Toggles" /></p>
+
+<h2 id="patterns-to-the-rescue">Patterns to the rescue</h2>
+
+<p>How do we handle the risk of a new feature?</p>
+
+<ul>
+  <li>
+    <p><strong>Single Responsibility</strong><br />
+Shipping code to live servers and switching on new features are in my opinion two different concerns. The first one is very technical, the later business driven. What happens when you decouple the feature releases from your code release? Code releases becomes boring for you and also for operations. At some point you maybe release every commit automatically (and that´s the <a href="http://blog.crisp.se/2013/02/05/yassalsundman/continuous-delivery-vs-continuous-deployment">difference</a> between Continuous Delivery and Continuous Deployment).</p>
+  </li>
+  <li>
+    <p><strong>Make it easy to toggle on and off</strong><br />
+It should be easy to toggle a feature on. Just a click. Everyone in your team should be able to do it. When the feature is accepted by your product guy he can immediately release it by himself.
+And it should be easy to rollback a feature when it´s not (properly) working.</p>
+  </li>
+  <li>
+    <p><strong>Canary Release</strong><br />
+To get feedback if the feature works (technically and also from a business perspective) it should be rolled out step-by-step and monitored. You maybe start only with 5% of your visitors or you show it only to Chrome users (or some other condition) and when it works increase the number of users.</p>
+  </li>
+</ul>
+
+<h2 id="summary">Summary</h2>
+<p>Knowing how to deal with that issues is one thing, the tooling is another. Together with <a href="http://www.matthias-kainer.de">Matthias</a> I started a new project called <a href="https://github.com/autoscout24/featurebee">FeatureBee</a> where we want to make it easier to release new features. The idea behind FeatureBee is to make it for developers as easy as possible to toggle new features and enable Product Owners at the same time to release features when and how they want it. Without all the technical stuff like configuration files, VCS and build processes.</p>
+
+<p>In my opinion this will change the way you and your team works. Imagine that you can release every green build automatically. You can switch features on and off whenever you want. You can test features on live environment without showing the feature to all other users. Think about it.</p>
+
+<p>In my next blog posts I´ll show how to work with FeatureBee.</p>
+
+<p>Happy Releasing!</p>
+
+</article>
+
+
+
+
+
+<section class="rss">
+  <p class="rss-subscribe text"><strong>Subscribe <a href="http://feeds.feedburner.com/pgarbe">via RSS</a></strong></p>
+</section>
+
+<section class="share">
+  <span>Share: </span>
+
+
+
+      <a href="//twitter.com/share?text=The+fear+of+new+features&url=http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/&via=pgarbe"
+        onclick="window.open(this.href, 'twitter-share', 'width=550,height=255');return false;">
+        <i class="fa fa-twitter-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.facebook.com/sharer.php?t=The+fear+of+new+features&u=http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/"
+        onclick="window.open(this.href, 'facebook-share', 'width=550,height=255');return false;">
+        <i class="fa fa-facebook-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.linkedin.com/shareArticle?mini=true&url=http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/"
+        onclick="window.open(this.href, 'linkedin-share', 'width=550,height=255');return false;">
+        <i class="fa fa-linkedin-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+      <a href="//plus.google.com/share?title=The+fear+of+new+features&url=http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/"
+        onclick="window.open(this.href, 'google-plus-share', 'width=550,height=255');return false;">
+        <i class="fa fa-google-plus-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.pinterest.com/pin/create/button/?description=The+fear+of+new+features&url=http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/&media=http://pgarbe.github.io/assets/header_image.jpg"
+        onclick="window.open(this.href, 'pinterest-share', 'width=550,height=255');return false;">
+        <i class="fa fa-pinterest-square fa-lg"></i>
+      </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <a href="//www.reddit.com/submit" onclick="window.location = '//www.reddit.com/submit?url=' + encodeURIComponent('http://pgarbe.github.io/blog/2014/01/16/the-fear-of-new-features/') + '&title=The fear of new features'; return false">
+        <i class="fa fa-reddit-square fa-lg"></i>
+      </a>
+
+
+</section>
+
+
+
+
+<section class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+    var disqus_shortname = 'pgarbe';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</section>
+
+
+
+</div>
+</div>
+
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h3 class="footer-heading">Philipp&#180;s Blog</h3>
+
+    <div class="site-navigation">
+
+      <p><strong>Site Map</strong></p>
+      <ul class="pages">
+
+
+          <li class="nav-link"><a href="/about/">About Me</a>
+
+
+
+
+
+
+
+
+
+          <li class="nav-link"><a href="/speaker/">Speaker</a>
+
+
+
+
+      </ul>
+    </div>
+
+    <div class="site-contact">
+
+      <p><strong>Contact</strong></p>
+      <ul class="social-media-list">
+        <li>
+          <a href="mailto:blog@garbe.io">
+            <i class="fa fa-envelope-o"></i>
+            <span class="username">blog@garbe.io</span>
+          </a>
+        </li>
+
+
+
+          <li>
+            <a href="https://twitter.com/pgarbe" title="Follow me on Twitter">
+              <i class="fa fa-twitter"></i>
+              <span class="username">pgarbe</span>
+            </a>
+          </li>
+
+
+
+
+
+          <li>
+            <a href="https://github.com/pgarbe" title="Fork me on GitHub">
+              <i class="fa fa-github"></i>
+              <span class="username">pgarbe</span>
+            </a>
+          </li>
+
+
+
+          <li>
+            <a href="https://www.linkedin.com/in/pgarbe" title="Connect with me on LinkedIn">
+              <i class="fa fa-linkedin"></i>
+              <span class="username">Philipp Garbe</span>
+            </a>
+          </li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      </ul>
+    </div>
+
+    <div class="site-signature">
+      <p class="rss-subscribe text"><strong>Subscribe <a href="http://feeds.feedburner.com/pgarbe">via RSS</a></strong></p>
+      <p class="text">From Bavaria to the Cloud. My blog about AWS, Docker and Continuous Delivery.
+</p>
+    </div>
+
+  </div>
+
+</footer>
+
+<!-- Scripts -->
+<script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.5/highlight.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/lightbox2/2.7.1/js/lightbox.min.js"></script>
+<script>
+
+$(document).ready(function() {
+
+  // Syntax highlighting
+  hljs.initHighlightingOnLoad();
+
+  // Header
+  var menuToggle = $('#js-mobile-menu').unbind();
+  $('#js-navigation-menu').removeClass("show");
+  menuToggle.on('click', function(e) {
+    e.preventDefault();
+    $('#js-navigation-menu').slideToggle(function(){
+      if($('#js-navigation-menu').is(':hidden')) {
+        $('#js-navigation-menu').removeAttr('style');
+      }
+    });
+  });
+
+
+});
+
+</script>
+
+
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-46808769-1', 'auto');
+  ga('send', 'pageview', {
+    'page': '/blog/2014/01/16/the-fear-of-new-features/',
+    'title': 'The fear of new features'
+  });
+</script>
+
+
+
+  </body>
+
+</html>
